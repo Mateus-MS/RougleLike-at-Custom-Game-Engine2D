@@ -1,6 +1,6 @@
 import { Engine } from "./engine.js";
-import { Draw } from "./draw.js";
-import { Entity } from "./entity.js";
+import { Draw } from "../Utils/draw.js";
+import { Entity } from "../Entity/entity.js";
 
 export class Scene extends Engine{
 
