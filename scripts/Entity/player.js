@@ -1,11 +1,11 @@
 import { Vector2 } from "../Utils/Vector2.js";
 import { Draw } from "../Utils/draw.js";
-import { Entity }  from "./entity.js";
+import { Mob }  from "./mob.js";
 
-export class Player extends Entity{
+export class Player extends Mob{
 
     constructor(position){
-        super(position.sub(new Vector2(10, 10)), new Vector2(20, 20), "red");
+        super(position, 20, "red");
 
         this.movement = {
             left:  false,
@@ -20,8 +20,8 @@ export class Player extends Entity{
 
     render(context){
 
-        Draw.rectangle({
-            position: this.position,
+        Draw.square({
+            position: this.position.sub(new Vector2(this.size / 2)),
             color   : this.color,
             size    : this.size,
         }, context)
