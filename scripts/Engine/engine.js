@@ -1,3 +1,5 @@
+import { Player } from "../Entity/player.js";
+
 export class Engine{
 
     constructor(){
@@ -30,14 +32,6 @@ export class Engine{
         this.interval = setInterval(()=>{
 
             this.c.clearRect(-this.screen.half_w, -this.screen.half_h, this.screen.w, this.screen.h);
-
-            for(let i = 0; i < this.entities.length; i++){ 
-                this.Draw.circle({
-                    color: this.entities[i].color,
-                    position: this.entities[i].position,
-                    size: this.entities[i].size
-                })
-            }
 
             if(this.update) this.update();
 

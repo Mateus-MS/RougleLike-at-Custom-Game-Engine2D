@@ -1,0 +1,3 @@
+player diagonals speed
+check if when away from the center the player moves faster
+put motiom when the camera stops from follow the player

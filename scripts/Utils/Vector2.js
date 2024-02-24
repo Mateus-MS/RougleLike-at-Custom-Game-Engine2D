@@ -1,3 +1,5 @@
+import { Calc } from "./calc.js";
+
 /**
 * @param {Object}   args - Pode receber um Array
 * @param {Vector2}  args - Pode receber um Vector2
@@ -45,6 +47,10 @@ export class Vector2{
 
         return new Vector2(0, 0);   
 
+    }
+
+    static randomScreenPosition(scene){
+        return new Vector2(Calc.randomInt(-scene.screen.half_w, scene.screen.half_w), Calc.randomInt(-scene.screen.half_h, scene.screen.half_h));
     }
 
     /** 
