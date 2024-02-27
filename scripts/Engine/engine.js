@@ -1,5 +1,3 @@
-import { Player } from "../Entity/player.js";
-
 export class Engine{
 
     constructor(){
@@ -35,7 +33,7 @@ export class Engine{
 
             if(this.update) this.update();
 
-        }, 1)
+        }, 1000 / 60)
 
     }
 

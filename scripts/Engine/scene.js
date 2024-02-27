@@ -4,6 +4,9 @@ import { Player } from "../Entity/player.js";
 import { Vector2 } from "../Utils/Vector2.js";
 import { Mob } from "../Entity/mob.js";
 
+import { CircleRange, QuadTree } from "./physics/quadTree.js";
+import { RectangleRange } from "./physics/quadTree.js";
+
 export class Scene extends Engine{
 
     constructor(){
@@ -25,11 +28,13 @@ export class Scene extends Engine{
     }
 
     setup(){
+
         this.player = new Player(Vector2.zero());
         this.entities.push(this.player)
-        for(let i = 0; i < 50; i++){
-            this.entities.push(new Mob(Vector2.randomScreenPosition(this), 20, 'green'))
+        for(let i = 0; i < 100; i++){ 
+            this.entities.push(new Mob(Vector2.randomScreenPosition(this), 15, 'green'))
         }
+
     }
 
     update(){
@@ -49,14 +54,13 @@ export class Scene extends Engine{
         }
         
         this.moveCamera();
-
         this.preventOverLap();
-
+        
         this.player.move();
         this.player.render(this.c);
-
+        
         this.entities.forEach(entity => {
-            entity.render(this.c)
+            entity.render(this.c, 'green')
         })
 
     }
@@ -95,31 +99,57 @@ export class Scene extends Engine{
 
     preventOverLap(){
 
+        //Cria uma nova QuadTree
+        let quad = new QuadTree(
+            //QuadTree area
+            new RectangleRange(
+                new Vector2(-this.screen.half_w, -this.screen.half_h),
+                new Vector2(this.screen.w, this.screen.h)
+            ),
+            //Capacidade maxima de cada galho
+            5
+        )
+
+        //TO_DO_BETTER
+        this.entities.forEach(entity => {
+            quad.insert(entity)
+        })
+
         //Itera sob todos as entidades
         for(let i = 0; i < this.entities.length; i++){
-            for(let j = 0; j < this.entities.length; j++){
-                //impede que teste com ele mesmo
-                if(i !== j){
 
-                    let distance = this.entities[i].position.distance(this.entities[j].position); 
-                    let sum_radi = this.entities[i].size + this.entities[j].size;
+            //Cria uma area ao redor desta entidade com o dobro do raio dela
+            let area = new CircleRange(this.entities[i].position, this.entities[i].size * 2);
+            //Procura qualquer outra entidade que exista nesta area
+            let closest_entities = quad.query(area);
+
+            //Itera sob qualquer entidade que exista nessa area
+            for(let j = 0; j < closest_entities.length; j++){
+
+                //impede que teste com ele mesmo
+                //TO_DO_BETTER
+                if(this.entities[i] !== closest_entities[j]){
+
+                    let distance = this.entities[i].position.distance(closest_entities[j].position); 
+                    let sum_radi = this.entities[i].size + closest_entities[j].size;
                     
                     //Se as duas entidades estiverem sobrepostas
                     if(distance <= sum_radi){
                         
+                        //Chama a função de colisão de cada entidade
                         if(this.entities[i].onCollision) this.entities[i].onCollision();
-                        if(this.entities[j].onCollision) this.entities[j].onCollision();
+                        if(closest_entities[j].onCollision) closest_entities[j].onCollision();
                         
                         //Se ambas forem Mobs
-                        if(this.entities[i] instanceof Mob && this.entities[j] instanceof Mob){
+                        if(this.entities[i] instanceof Mob && closest_entities[j] instanceof Mob){
                             
-                            let overlap = .5 * (distance - this.entities[i].size - this.entities[j].size);
+                            let overlap = .5 * (distance - this.entities[i].size - closest_entities[j].size);
                             
-                            this.entities[i].position.x -= overlap * (this.entities[i].position.x - this.entities[j].position.x) / distance;
-                            this.entities[i].position.y -= overlap * (this.entities[i].position.y - this.entities[j].position.y) / distance;
+                            this.entities[i].position.x -= overlap * (this.entities[i].position.x - closest_entities[j].position.x) / distance;
+                            this.entities[i].position.y -= overlap * (this.entities[i].position.y - closest_entities[j].position.y) / distance;
                             
-                            this.entities[j].position.x += overlap * (this.entities[i].position.x - this.entities[j].position.x) / distance;
-                            this.entities[j].position.y += overlap * (this.entities[i].position.y - this.entities[j].position.y) / distance;
+                            closest_entities[j].position.x += overlap * (this.entities[i].position.x - closest_entities[j].position.x) / distance;
+                            closest_entities[j].position.y += overlap * (this.entities[i].position.y - closest_entities[j].position.y) / distance;
 
                         }
                     }
